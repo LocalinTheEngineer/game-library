@@ -2,7 +2,7 @@
 
 A personal game management platform for tracking what you play, how long you've played it, and how you'd rate it.
 
-**Live demo:** _add your GitHub Pages link here after step 6 below_
+**Live demo:** https://localintheengineer.github.io/game-library/
 
 ## Current stage: v1 — Local Edition
 
