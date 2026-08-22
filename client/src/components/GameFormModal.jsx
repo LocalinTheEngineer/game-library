@@ -13,6 +13,8 @@ const BLANK = {
 
 export default function GameFormModal({ game, onSave, onDelete, onClose }) {
   const [form, setForm] = useState(BLANK)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
   const nameRef = useRef(null)
   const isEditing = Boolean(game)
 
@@ -31,23 +33,40 @@ export default function GameFormModal({ game, onSave, onDelete, onClose }) {
 
   const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }))
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const name = form.name.trim()
     if (!name) return
-    onSave({
-      name,
-      genre: form.genre,
-      platform: form.platform,
-      status: form.status,
-      hours: Math.max(0, parseInt(form.hours, 10) || 0),
-      rating: form.rating,
-      notes: form.notes.trim(),
-    })
+
+    setBusy(true)
+    setError(null)
+    try {
+      await onSave({
+        name,
+        genre: form.genre,
+        platform: form.platform,
+        status: form.status,
+        hours: Math.max(0, parseInt(form.hours, 10) || 0),
+        rating: form.rating,
+        notes: form.notes.trim(),
+      })
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
   }
 
-  const handleDelete = () => {
-    if (window.confirm(`Delete "${game.name}" from your library?`)) onDelete(game.id)
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete "${game.name}" from your library?`)) return
+
+    setBusy(true)
+    setError(null)
+    try {
+      await onDelete(game.id)
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
   }
 
   return (
@@ -161,18 +180,20 @@ export default function GameFormModal({ game, onSave, onDelete, onClose }) {
             />
           </div>
 
+          {error && <p className="form-error">{error}</p>}
+
           <div className="modal-actions">
             {isEditing && (
-              <button type="button" className="btn-danger" onClick={handleDelete}>
+              <button type="button" className="btn-danger" onClick={handleDelete} disabled={busy}>
                 Delete
               </button>
             )}
             <div className="right-group">
-              <button type="button" className="btn-secondary" onClick={onClose}>
+              <button type="button" className="btn-secondary" onClick={onClose} disabled={busy}>
                 Cancel
               </button>
-              <button type="submit" className="btn-primary">
-                Save Game
+              <button type="submit" className="btn-primary" disabled={busy}>
+                {busy ? 'Saving…' : 'Save Game'}
               </button>
             </div>
           </div>
