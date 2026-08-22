@@ -1,75 +1,125 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { seedGames } from './seed.js'
+import { query, transaction } from './db/pool.js'
+import { DEMO_USER } from './seed.js'
 
-const dataDir = join(dirname(fileURLToPath(import.meta.url)), 'data')
-const dataFile = join(dataDir, 'games.json')
+// v5'te oturum açan kullanıcıdan gelecek. Şimdilik tek hesap var.
+let cachedUserId = null
 
-let games = null
-let writeQueue = Promise.resolve()
+async function currentUserId() {
+  if (cachedUserId) return cachedUserId
 
-async function load() {
-  if (games) return games
-
-  try {
-    games = JSON.parse(await readFile(dataFile, 'utf8'))
-  } catch (err) {
-    if (err.code !== 'ENOENT') throw err
-    games = seedGames()
-    await mkdir(dataDir, { recursive: true })
-    await writeFile(dataFile, JSON.stringify(games, null, 2))
+  const { rows } = await query('SELECT id FROM users WHERE email = $1', [DEMO_USER.email])
+  if (!rows.length) {
+    throw new Error('Demo user is missing. Run "npm run db:migrate" first.')
   }
 
-  return games
+  cachedUserId = rows[0].id
+  return cachedUserId
 }
 
-// Yazma işlemlerini sıraya alıyoruz, aksi halde eşzamanlı iki istek
-// birbirinin dosyasının üstüne yazabilir.
-function persist() {
-  writeQueue = writeQueue.then(() =>
-    writeFile(dataFile, JSON.stringify(games, null, 2))
+// Veritabanı sütun adları ile API alan adları birebir aynı değil,
+// çeviriyi tek yerde yapıyoruz.
+function toApi(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    genre: row.genre,
+    platform: row.platform,
+    coverImage: row.cover_image,
+    releaseYear: row.release_year,
+    status: row.status,
+    hours: row.hours_played,
+    rating: row.rating,
+    notes: row.notes,
+    addedAt: Date.parse(row.added_at),
+  }
+}
+
+const SELECT_ENTRY = `
+  SELECT ug.id, g.name, g.genre, g.platform, g.cover_image, g.release_year,
+         ug.status, ug.hours_played, ug.rating, ug.notes, ug.added_at
+  FROM user_games ug
+  JOIN games g ON g.id = ug.game_id
+`
+
+// Kapak ve yıl sadece dolu geldiyse güncellenir, aksi halde eldeki veri korunur.
+async function upsertGame(client, { name, genre, platform, coverImage, releaseYear }) {
+  const { rows } = await client.query(
+    `INSERT INTO games (name, genre, platform, cover_image, release_year)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (lower(name))
+     DO UPDATE SET
+       genre = EXCLUDED.genre,
+       platform = EXCLUDED.platform,
+       cover_image = COALESCE(EXCLUDED.cover_image, games.cover_image),
+       release_year = COALESCE(EXCLUDED.release_year, games.release_year)
+     RETURNING id`,
+    [name, genre, platform, coverImage, releaseYear]
   )
-  return writeQueue
-}
-
-function makeId() {
-  return 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+  return rows[0].id
 }
 
 export async function listGames() {
-  return load()
+  const userId = await currentUserId()
+  const { rows } = await query(
+    `${SELECT_ENTRY} WHERE ug.user_id = $1 ORDER BY ug.added_at DESC`,
+    [userId]
+  )
+  return rows.map(toApi)
 }
 
 export async function findGame(id) {
-  const all = await load()
-  return all.find((g) => g.id === id)
+  const userId = await currentUserId()
+  const { rows } = await query(`${SELECT_ENTRY} WHERE ug.id = $1 AND ug.user_id = $2`, [id, userId])
+  return rows.length ? toApi(rows[0]) : null
 }
 
 export async function createGame(fields) {
-  const all = await load()
-  const game = { id: makeId(), addedAt: Date.now(), ...fields }
-  all.unshift(game)
-  await persist()
-  return game
+  const userId = await currentUserId()
+
+  return transaction(async (client) => {
+    const gameId = await upsertGame(client, fields)
+
+    const { rows } = await client.query(
+      `INSERT INTO user_games (user_id, game_id, status, hours_played, rating, notes)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id`,
+      [userId, gameId, fields.status, fields.hours, fields.rating, fields.notes]
+    )
+
+    const created = await client.query(`${SELECT_ENTRY} WHERE ug.id = $1`, [rows[0].id])
+    return toApi(created.rows[0])
+  })
 }
 
 export async function updateGame(id, fields) {
-  const all = await load()
-  const index = all.findIndex((g) => g.id === id)
-  if (index === -1) return null
+  const userId = await currentUserId()
 
-  all[index] = { ...all[index], ...fields, id, addedAt: all[index].addedAt }
-  await persist()
-  return all[index]
+  return transaction(async (client) => {
+    const owned = await client.query('SELECT id FROM user_games WHERE id = $1 AND user_id = $2', [
+      id,
+      userId,
+    ])
+    if (!owned.rows.length) return null
+
+    const gameId = await upsertGame(client, fields)
+
+    await client.query(
+      `UPDATE user_games
+       SET game_id = $1, status = $2, hours_played = $3, rating = $4, notes = $5, updated_at = now()
+       WHERE id = $6`,
+      [gameId, fields.status, fields.hours, fields.rating, fields.notes, id]
+    )
+
+    const updated = await client.query(`${SELECT_ENTRY} WHERE ug.id = $1`, [id])
+    return toApi(updated.rows[0])
+  })
 }
 
 export async function removeGame(id) {
-  const all = await load()
-  const index = all.findIndex((g) => g.id === id)
-  if (index === -1) return false
-
-  all.splice(index, 1)
-  await persist()
-  return true
+  const userId = await currentUserId()
+  const { rowCount } = await query('DELETE FROM user_games WHERE id = $1 AND user_id = $2', [
+    id,
+    userId,
+  ])
+  return rowCount > 0
 }

@@ -1,28 +1,85 @@
-const DAY = 86400000
-
-// İlk çalıştırmada boş bir ekran yerine örnek kütüphane görünsün diye.
-export function seedGames() {
-  const now = Date.now()
-
-  const rows = [
-    ['Cyberpunk 2077', 'RPG', 'PC', 'playing', 82, 5, 'Night City is worth the wait.', 1],
-    ['Elden Ring', 'RPG', 'PC', 'completed', 71, 5, 'Best boss design in years.', 3],
-    ['Grand Theft Auto V', 'Action', 'PC', 'completed', 156, 5, '', 6],
-    ['Minecraft', 'Sandbox', 'PC', 'playing', 320, 4, 'Still building the castle.', 8],
-    ['The Witcher 3', 'RPG', 'PC', 'backlog', 0, 0, '', 10],
-    ['Hollow Knight', 'Adventure', 'Nintendo', 'backlog', 2, 0, '', 12],
-    ['Fallout 76', 'Shooter', 'PC', 'dropped', 6, 2, 'Not for me.', 20],
-  ]
-
-  return rows.map(([name, genre, platform, status, hours, rating, notes, daysAgo], i) => ({
-    id: `g_seed_${i}`,
-    name,
-    genre,
-    platform,
-    status,
-    hours,
-    rating,
-    notes,
-    addedAt: now - daysAgo * DAY,
-  }))
+// v5'te gerçek kullanıcı sistemi gelene kadar her şey bu hesaba bağlı.
+export const DEMO_USER = {
+  username: 'demo',
+  email: 'demo@example.com',
 }
+
+export const DEMO_LIBRARY = [
+  {
+    name: 'Cyberpunk 2077',
+    genre: 'RPG',
+    platform: 'PC',
+    releaseYear: 2020,
+    status: 'playing',
+    hours: 82,
+    rating: 5,
+    notes: 'Night City is worth the wait.',
+    daysAgo: 1,
+  },
+  {
+    name: 'Elden Ring',
+    genre: 'RPG',
+    platform: 'PC',
+    releaseYear: 2022,
+    status: 'completed',
+    hours: 71,
+    rating: 5,
+    notes: 'Best boss design in years.',
+    daysAgo: 3,
+  },
+  {
+    name: 'Grand Theft Auto V',
+    genre: 'Action',
+    platform: 'PC',
+    releaseYear: 2013,
+    status: 'completed',
+    hours: 156,
+    rating: 5,
+    notes: '',
+    daysAgo: 6,
+  },
+  {
+    name: 'Minecraft',
+    genre: 'Sandbox',
+    platform: 'PC',
+    releaseYear: 2011,
+    status: 'playing',
+    hours: 320,
+    rating: 4,
+    notes: 'Still building the castle.',
+    daysAgo: 8,
+  },
+  {
+    name: 'The Witcher 3',
+    genre: 'RPG',
+    platform: 'PC',
+    releaseYear: 2015,
+    status: 'backlog',
+    hours: 0,
+    rating: 0,
+    notes: '',
+    daysAgo: 10,
+  },
+  {
+    name: 'Hollow Knight',
+    genre: 'Adventure',
+    platform: 'Nintendo',
+    releaseYear: 2017,
+    status: 'backlog',
+    hours: 2,
+    rating: 0,
+    notes: '',
+    daysAgo: 12,
+  },
+  {
+    name: 'Fallout 76',
+    genre: 'Shooter',
+    platform: 'PC',
+    releaseYear: 2018,
+    status: 'dropped',
+    hours: 6,
+    rating: 2,
+    notes: 'Not for me.',
+    daysAgo: 20,
+  },
+]

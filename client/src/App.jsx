@@ -79,7 +79,12 @@ export default function App() {
 
       {content()}
 
-      <footer className="credit">Games are stored on the API server · Accounts arrive in v5</footer>
+      <footer className="credit">
+        Game data and cover art from{' '}
+        <a href="https://rawg.io" target="_blank" rel="noreferrer">
+          RAWG
+        </a>
+      </footer>
 
       {modal && (
         <GameFormModal

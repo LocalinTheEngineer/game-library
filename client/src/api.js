@@ -17,6 +17,7 @@ async function request(path, options) {
 
 export const api = {
   list: () => request('/games'),
+  search: (term) => request(`/search?q=${encodeURIComponent(term)}`),
   create: (game) => request('/games', { method: 'POST', body: JSON.stringify(game) }),
   update: (id, game) => request(`/games/${id}`, { method: 'PUT', body: JSON.stringify(game) }),
   remove: (id) => request(`/games/${id}`, { method: 'DELETE' }),
