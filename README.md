@@ -139,6 +139,35 @@ npm run dev
 
 To reset everything, drop and recreate the database, then run the migration again.
 
+## Deploying
+
+The app runs as three pieces: a Postgres database, the API, and the static client.
+
+**Database — Neon.** Create a project and copy the pooled connection string. The free plan is permanent and scales to zero when idle.
+
+**API — Render.** Create a Web Service from this repository with root directory `server`, build command `npm install`, and start command `npm start` (which applies the schema before booting). Set these environment variables:
+
+| Variable       | Value                                        |
+| -------------- | -------------------------------------------- |
+| `DATABASE_URL` | The Neon connection string                   |
+| `JWT_SECRET`   | A long random string                         |
+| `RAWG_API_KEY` | Your RAWG key                                |
+| `CORS_ORIGINS` | `https://<username>.github.io`               |
+
+Free web services sleep after fifteen minutes of inactivity, so the first request after a quiet spell takes about a minute. The sign-in screen says as much while it waits.
+
+**Client — GitHub Pages.** Build with the API address baked in, then publish:
+
+```bash
+cd client
+VITE_API_URL=https://<your-service>.onrender.com/api npm run build
+npx gh-pages -d dist
+```
+
+On Windows, set the variable first with `set VITE_API_URL=...` and then run the build.
+
+Point the repository's Pages setting at the `gh-pages` branch. Rebuild and republish whenever the client changes; the API redeploys itself on every push.
+
 ## Roadmap
 
 - [x] v1 — HTML / CSS / JS / LocalStorage

@@ -927,3 +927,7 @@ button {
 .account-menu button:hover {
   background: var(--bg-card);
 }
+.auth-wait {
+  text-align: center;
+  margin-top: 10px;
+}

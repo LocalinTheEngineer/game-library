@@ -1,8 +1,12 @@
 import pg from 'pg'
 import 'dotenv/config'
 
+// Barındırılan veritabanları TLS istiyor; yerel kurulumda gerekmiyor.
+const needsSsl = /neon\.tech|render\.com|supabase|amazonaws/.test(process.env.DATABASE_URL || '')
+
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: needsSsl ? { rejectUnauthorized: false } : false,
 })
 
 pool.on('error', (err) => {

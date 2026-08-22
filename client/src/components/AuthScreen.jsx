@@ -84,6 +84,8 @@ export default function AuthScreen({ onSignIn, onRegister }) {
           <button type="submit" className="btn-primary auth-submit" disabled={busy}>
             {busy ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in'}
           </button>
+
+          {busy && <p className="field-hint auth-wait">The server sleeps when idle — the first request can take a minute.</p>}
         </form>
 
         <p className="auth-switch">

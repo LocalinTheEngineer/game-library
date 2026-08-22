@@ -9,7 +9,9 @@ import { query } from './db/pool.js'
 const app = express()
 const port = process.env.PORT || 4000
 
-app.use(cors())
+// Yayında sadece kendi arayüzümüzden gelen isteklere izin veriyoruz.
+const allowedOrigins = (process.env.CORS_ORIGINS || '').split(',').filter(Boolean)
+app.use(cors(allowedOrigins.length ? { origin: allowedOrigins } : {}))
 app.use(express.json())
 
 app.use('/api/auth', auth)
