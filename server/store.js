@@ -1,20 +1,4 @@
 import { query, transaction } from './db/pool.js'
-import { DEMO_USER } from './seed.js'
-
-// v5'te oturum açan kullanıcıdan gelecek. Şimdilik tek hesap var.
-let cachedUserId = null
-
-async function currentUserId() {
-  if (cachedUserId) return cachedUserId
-
-  const { rows } = await query('SELECT id FROM users WHERE email = $1', [DEMO_USER.email])
-  if (!rows.length) {
-    throw new Error('Demo user is missing. Run "npm run db:migrate" first.')
-  }
-
-  cachedUserId = rows[0].id
-  return cachedUserId
-}
 
 // Veritabanı sütun adları ile API alan adları birebir aynı değil,
 // çeviriyi tek yerde yapıyoruz.
@@ -58,8 +42,7 @@ async function upsertGame(client, { name, genre, platform, coverImage, releaseYe
   return rows[0].id
 }
 
-export async function listGames() {
-  const userId = await currentUserId()
+export async function listGames(userId) {
   const { rows } = await query(
     `${SELECT_ENTRY} WHERE ug.user_id = $1 ORDER BY ug.added_at DESC`,
     [userId]
@@ -67,14 +50,12 @@ export async function listGames() {
   return rows.map(toApi)
 }
 
-export async function findGame(id) {
-  const userId = await currentUserId()
+export async function findGame(userId, id) {
   const { rows } = await query(`${SELECT_ENTRY} WHERE ug.id = $1 AND ug.user_id = $2`, [id, userId])
   return rows.length ? toApi(rows[0]) : null
 }
 
-export async function createGame(fields) {
-  const userId = await currentUserId()
+export async function createGame(userId, fields) {
 
   return transaction(async (client) => {
     const gameId = await upsertGame(client, fields)
@@ -91,8 +72,7 @@ export async function createGame(fields) {
   })
 }
 
-export async function updateGame(id, fields) {
-  const userId = await currentUserId()
+export async function updateGame(userId, id, fields) {
 
   return transaction(async (client) => {
     const owned = await client.query('SELECT id FROM user_games WHERE id = $1 AND user_id = $2', [
@@ -115,8 +95,7 @@ export async function updateGame(id, fields) {
   })
 }
 
-export async function removeGame(id) {
-  const userId = await currentUserId()
+export async function removeGame(userId, id) {
   const { rowCount } = await query('DELETE FROM user_games WHERE id = $1 AND user_id = $2', [
     id,
     userId,

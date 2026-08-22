@@ -1,7 +1,10 @@
 import { Router } from 'express'
 import { searchGames } from '../rawg.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
+
+router.use(requireAuth)
 
 router.get('/', async (req, res, next) => {
   const term = (req.query.q || '').toString()

@@ -1,12 +1,15 @@
 import { Router } from 'express'
 import { listGames, findGame, createGame, updateGame, removeGame } from '../store.js'
 import { validateGame } from '../validate.js'
+import { requireAuth } from '../auth.js'
 
 const router = Router()
 
+router.use(requireAuth)
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await listGames())
+    res.json(await listGames(req.userId))
   } catch (err) {
     next(err)
   }
@@ -14,7 +17,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const game = await findGame(req.params.id)
+    const game = await findGame(req.userId, req.params.id)
     if (!game) return res.status(404).json({ error: 'Game not found' })
     res.json(game)
   } catch (err) {
@@ -27,7 +30,7 @@ router.post('/', async (req, res, next) => {
   if (errors) return res.status(400).json({ errors })
 
   try {
-    res.status(201).json(await createGame(game))
+    res.status(201).json(await createGame(req.userId, game))
   } catch (err) {
     next(err)
   }
@@ -38,7 +41,7 @@ router.put('/:id', async (req, res, next) => {
   if (errors) return res.status(400).json({ errors })
 
   try {
-    const updated = await updateGame(req.params.id, game)
+    const updated = await updateGame(req.userId, req.params.id, game)
     if (!updated) return res.status(404).json({ error: 'Game not found' })
     res.json(updated)
   } catch (err) {
@@ -48,7 +51,7 @@ router.put('/:id', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const deleted = await removeGame(req.params.id)
+    const deleted = await removeGame(req.userId, req.params.id)
     if (!deleted) return res.status(404).json({ error: 'Game not found' })
     res.status(204).end()
   } catch (err) {

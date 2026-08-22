@@ -70,3 +70,34 @@ export function validateGame(body) {
     },
   }
 }
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export function validateRegistration(body) {
+  const errors = []
+  const username = typeof body.username === 'string' ? body.username.trim() : ''
+  const email = typeof body.email === 'string' ? body.email.trim() : ''
+  const password = typeof body.password === 'string' ? body.password : ''
+
+  if (username.length < 3 || username.length > 30) {
+    errors.push('username must be between 3 and 30 characters')
+  } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    errors.push('username can only contain letters, numbers, and underscores')
+  }
+
+  if (!EMAIL_PATTERN.test(email)) errors.push('email is not valid')
+
+  if (password.length < 8) errors.push('password must be at least 8 characters')
+  if (password.length > 200) errors.push('password is too long')
+
+  if (errors.length) return { errors }
+  return { data: { username, email, password } }
+}
+
+export function validateCredentials(body) {
+  const email = typeof body.email === 'string' ? body.email.trim() : ''
+  const password = typeof body.password === 'string' ? body.password : ''
+
+  if (!email || !password) return { errors: ['email and password are required'] }
+  return { data: { email, password } }
+}

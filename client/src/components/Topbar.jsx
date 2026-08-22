@@ -1,15 +1,37 @@
+import { useState, useEffect, useRef } from 'react'
+
 const VIEWS = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'library', label: 'Library' },
   { id: 'stats', label: 'Stats' },
 ]
 
-export default function Topbar({ view, onViewChange, theme, onToggleTheme, onAddGame }) {
+export default function Topbar({
+  view,
+  onViewChange,
+  theme,
+  onToggleTheme,
+  onAddGame,
+  username,
+  onSignOut,
+}) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+
+    const close = (e) => {
+      if (!menuRef.current?.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [menuOpen])
+
   return (
     <header className="topbar">
       <div className="brand">
         <h1>🎮 Game Library</h1>
-        <span className="tag">v2 · react</span>
       </div>
 
       <nav className="tabs">
@@ -32,9 +54,30 @@ export default function Topbar({ view, onViewChange, theme, onToggleTheme, onAdd
         >
           {theme === 'light' ? '☀️' : '🌙'}
         </button>
+
         <button className="btn-primary" onClick={onAddGame}>
           + Add Game
         </button>
+
+        <div className="account" ref={menuRef}>
+          <button
+            className="avatar"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+          >
+            {username.slice(0, 1).toUpperCase()}
+          </button>
+
+          {menuOpen && (
+            <div className="account-menu" role="menu">
+              <span className="account-name">{username}</span>
+              <button onClick={onSignOut} role="menuitem">
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )

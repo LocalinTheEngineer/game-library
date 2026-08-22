@@ -2,13 +2,18 @@
 
 A personal game management platform for tracking what you play, how long you've played it, and how you'd rate it.
 
-## Current stage: v5 — Cover art and game search
+## Current stage: v6 — Accounts
 
-Adding a game now starts with a search against the RAWG database. Pick a result and the title, genre, platform, release year, and cover art fill themselves in; the manual form is still there for anything the search misses. Covers are stored alongside the game so the library reads as a shelf rather than a spreadsheet.
+Everyone gets their own library. Registration and sign-in issue a JWT that the client stores and sends with every request; the API resolves the token to a user id and scopes every query to it. Passwords are hashed with scrypt and a per-user salt, so the database never holds anything reversible.
+
+Two people can track the same game independently — same catalogue row, separate hours, ratings, and notes.
+
+Adding a game starts with a search against the RAWG database. Pick a result and the title, genre, platform, release year, and cover art fill themselves in; the manual form is still there for anything the search misses.
 
 The RAWG key lives on the server. The browser only ever talks to this API, so the key is never shipped to the client.
 
 ### Features
+- Registration, sign-in, and per-user libraries
 - Dashboard with library-wide stats
 - Searchable, filterable, sortable library view
 - Add / edit / delete games with genre, platform, status, hours, star rating, and notes
@@ -45,7 +50,7 @@ Constraints are enforced in the database as well as in the API: status must be o
 client/                React app (Vite)
 ├── src/components/    Reusable UI pieces
 ├── src/pages/         Dashboard, Library, Stats
-├── src/hooks/         useGames, useTheme, useLocalStorage
+├── src/hooks/         useAuth, useGames, useTheme, useLocalStorage
 ├── src/api.js         Fetch wrapper for the REST API
 └── src/styles/        global.css
 
@@ -53,9 +58,12 @@ server/                Express API
 ├── db/schema.sql      Table definitions
 ├── db/pool.js         Connection pool and transaction helper
 ├── db/migrate.js      Applies the schema and inserts demo data
+├── auth.js            Password hashing, token signing, route guard
+├── users.js           Account queries
 ├── rawg.js            RAWG client, genre/platform mapping, cache
 ├── routes/games.js    Route handlers
 ├── routes/search.js   Game search endpoint
+├── routes/auth.js     Register, login, current user
 ├── store.js           SQL queries behind the API
 ├── validate.js        Request validation
 └── index.js           App setup and error handling
@@ -65,9 +73,12 @@ server/                Express API
 
 Base path: `/api`
 
-| Method | Path         | Description                      |
-| ------ | ------------ | -------------------------------- |
-| GET    | `/games`     | List the current library         |
+| Method | Path             | Description                      |
+| ------ | ---------------- | -------------------------------- |
+| POST   | `/auth/register` | Create an account, returns a token |
+| POST   | `/auth/login`    | Sign in, returns a token         |
+| GET    | `/auth/me`       | Current user for a valid token   |
+| GET    | `/games`         | List the current library         |
 | GET    | `/games/:id` | Fetch one entry                  |
 | POST   | `/games`     | Add a game to the library        |
 | PUT    | `/games/:id` | Update an entry                  |
@@ -75,7 +86,11 @@ Base path: `/api`
 | GET    | `/search?q=` | Search the RAWG catalogue        |
 | GET    | `/health`    | Liveness check, includes database |
 
-`400` for invalid payloads, `404` for unknown ids, `409` when a game is already in the library, `502` when the upstream search is unreachable.
+Everything except the two auth endpoints requires an `Authorization: Bearer <token>` header.
+
+`400` for invalid payloads, `401` for a missing or expired token, `404` for unknown ids, `409` for duplicate emails, usernames, or library entries, `502` when the upstream search is unreachable.
+
+Requests for another user's entry return `404` rather than `403`, so the API never confirms that a given id exists.
 
 Search responses are cached in memory for six hours, which keeps the app well inside the free tier's monthly request budget.
 
@@ -96,7 +111,13 @@ cd server
 cp .env.example .env
 ```
 
-The app runs without a RAWG key — search returns an error and you add games manually — but covers are the point of this version.
+`JWT_SECRET` signs session tokens and must be long and random:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+The app runs without a RAWG key — search returns an error and you add games manually — but covers are worth the minute it takes to get one.
 
 Install everything and create the tables:
 
@@ -104,6 +125,8 @@ Install everything and create the tables:
 npm run install:all
 npm run db:migrate
 ```
+
+The database starts empty. Register an account in the app and build your library from there.
 
 Start both processes:
 
@@ -114,7 +137,7 @@ npm run dev
 - API: http://localhost:4000
 - Client: http://localhost:5173
 
-To reset the library, drop and recreate the database, then run the migration again.
+To reset everything, drop and recreate the database, then run the migration again.
 
 ## Roadmap
 
@@ -123,12 +146,12 @@ To reset the library, drop and recreate the database, then run the migration aga
 - [x] v3 — Node.js + Express backend
 - [x] v4 — PostgreSQL database
 - [x] v5 — RAWG integration and cover art
-- [ ] v6 — JWT authentication and real accounts
+- [x] v6 — JWT authentication and real accounts
 - [ ] v7 — Polish: richer charts, responsive pass, dark mode refinements
 
 ## Tech stack
 
-`React` · `Vite` · `Node.js` · `Express` · `PostgreSQL` · `RAWG API`
+`React` · `Vite` · `Node.js` · `Express` · `PostgreSQL` · `JWT` · `RAWG API`
 
 ## Attribution
 

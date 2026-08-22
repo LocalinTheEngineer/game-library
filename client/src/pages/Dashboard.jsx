@@ -11,7 +11,7 @@ function StatCell({ num, label }) {
   )
 }
 
-export default function Dashboard({ games, onSelectGame, onAddGame, onGoToLibrary }) {
+export default function Dashboard({ games, username, onSelectGame, onAddGame, onGoToLibrary }) {
   const stats = useMemo(() => {
     const by = (s) => games.filter((g) => g.status === s).length
     return {
@@ -39,7 +39,7 @@ export default function Dashboard({ games, onSelectGame, onAddGame, onGoToLibrar
 
   return (
     <main>
-      <h2 className="greeting">Welcome back 👋</h2>
+      <h2 className="greeting">Welcome back, {username} 👋</h2>
       <p className="greeting-sub">Here&apos;s what&apos;s happening in your library.</p>
 
       <div className="stat-strip">

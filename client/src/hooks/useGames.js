@@ -1,12 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '../api'
 
-export function useGames() {
+export function useGames(user) {
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const refresh = useCallback(async () => {
+    if (!user) {
+      setGames([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       setGames(await api.list())
@@ -16,7 +22,7 @@ export function useGames() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [user])
 
   useEffect(() => {
     refresh()

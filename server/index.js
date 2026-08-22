@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import games from './routes/games.js'
 import search from './routes/search.js'
+import auth from './routes/auth.js'
 import { query } from './db/pool.js'
 
 const app = express()
@@ -11,6 +12,7 @@ const port = process.env.PORT || 4000
 app.use(cors())
 app.use(express.json())
 
+app.use('/api/auth', auth)
 app.use('/api/games', games)
 app.use('/api/search', search)
 
@@ -38,9 +40,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong' })
 })
 
-if (!process.env.DATABASE_URL) {
-  console.error('DATABASE_URL is not set. Copy .env.example to .env and fill it in.')
-  process.exit(1)
+for (const name of ['DATABASE_URL', 'JWT_SECRET']) {
+  if (!process.env[name]) {
+    console.error(`${name} is not set. Copy .env.example to .env and fill it in.`)
+    process.exit(1)
+  }
 }
 
 app.listen(port, () => {

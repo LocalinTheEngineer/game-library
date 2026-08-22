@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import Topbar from './components/Topbar'
 import GameFormModal from './components/GameFormModal'
+import AuthScreen from './components/AuthScreen'
 import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import Stats from './pages/Stats'
 import { useGames } from './hooks/useGames'
 import { useTheme } from './hooks/useTheme'
+import { useAuth } from './hooks/useAuth'
 
 export default function App() {
-  const { games, loading, error, refresh, addGame, updateGame, deleteGame } = useGames()
+  const { user, checking, signIn, register, signOut } = useAuth()
+  const { games, loading, error, refresh, addGame, updateGame, deleteGame } = useGames(user)
   const { theme, toggleTheme } = useTheme()
 
   const [view, setView] = useState('dashboard')
@@ -30,6 +33,14 @@ export default function App() {
   const handleDelete = async (id) => {
     await deleteGame(id)
     closeModal()
+  }
+
+  if (checking) {
+    return <p className="notice">Loading…</p>
+  }
+
+  if (!user) {
+    return <AuthScreen onSignIn={signIn} onRegister={register} />
   }
 
   function content() {
@@ -60,6 +71,7 @@ export default function App() {
     return (
       <Dashboard
         games={games}
+        username={user.username}
         onSelectGame={openEditModal}
         onAddGame={openAddModal}
         onGoToLibrary={() => setView('library')}
@@ -75,6 +87,8 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onAddGame={openAddModal}
+        username={user.username}
+        onSignOut={signOut}
       />
 
       {content()}

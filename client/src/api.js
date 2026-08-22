@@ -1,10 +1,26 @@
 const base = import.meta.env.VITE_API_URL || '/api'
 
-async function request(path, options) {
-  const res = await fetch(base + path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
+let token = null
+let onUnauthorized = null
+
+export function setToken(value) {
+  token = value
+}
+
+export function onSessionExpired(handler) {
+  onUnauthorized = handler
+}
+
+async function request(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers }
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  const res = await fetch(base + path, { ...options, headers })
+
+  if (res.status === 401) {
+    onUnauthorized?.()
+    throw new Error('Your session has expired. Please sign in again.')
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => null)
@@ -16,6 +32,9 @@ async function request(path, options) {
 }
 
 export const api = {
+  register: (payload) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+  login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  me: () => request('/auth/me'),
   list: () => request('/games'),
   search: (term) => request(`/search?q=${encodeURIComponent(term)}`),
   create: (game) => request('/games', { method: 'POST', body: JSON.stringify(game) }),
