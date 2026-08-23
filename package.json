@@ -1,7 +1,7 @@
 {
   "name": "game-library",
   "private": true,
-  "version": "6.0.0",
+  "version": "7.0.0",
   "scripts": {
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "db:migrate": "npm run db:migrate --prefix server",

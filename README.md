@@ -2,7 +2,22 @@
 
 A personal game management platform for tracking what you play, how long you've played it, and how you'd rate it.
 
-## Current stage: v6 — Accounts
+**[Live demo](https://localintheengineer.github.io/game-library/)** · React · Node.js · Express · PostgreSQL
+
+> The API sleeps when idle, so the first request after a quiet spell takes about a minute.
+
+![Library](docs/library.png)
+
+<details>
+<summary>More screenshots</summary>
+
+![Dashboard](docs/dashboard.png)
+
+![Stats](docs/stats.png)
+
+</details>
+
+## What it does
 
 Everyone gets their own library. Registration and sign-in issue a JWT that the client stores and sends with every request; the API resolves the token to a user id and scopes every query to it. Passwords are hashed with scrypt and a per-user salt, so the database never holds anything reversible.
 
@@ -12,7 +27,6 @@ Adding a game starts with a search against the RAWG database. Pick a result and 
 
 The RAWG key lives on the server. The browser only ever talks to this API, so the key is never shipped to the client.
 
-### Features
 - Registration, sign-in, and per-user libraries
 - Dashboard with library-wide stats
 - Searchable, filterable, sortable library view
@@ -168,6 +182,10 @@ On Windows, set the variable first with `set VITE_API_URL=...` and then run the 
 
 Point the repository's Pages setting at the `gh-pages` branch. Rebuild and republish whenever the client changes; the API redeploys itself on every push.
 
+## How it was built
+
+Each version added one layer, and the git history follows that order.
+
 ## Roadmap
 
 - [x] v1 — HTML / CSS / JS / LocalStorage
@@ -176,7 +194,7 @@ Point the repository's Pages setting at the `gh-pages` branch. Rebuild and repub
 - [x] v4 — PostgreSQL database
 - [x] v5 — RAWG integration and cover art
 - [x] v6 — JWT authentication and real accounts
-- [ ] v7 — Polish: richer charts, responsive pass, dark mode refinements
+- [x] v7 — Richer charts, responsive pass, loading states
 
 ## Tech stack
 

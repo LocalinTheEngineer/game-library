@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Topbar from './components/Topbar'
 import GameFormModal from './components/GameFormModal'
 import AuthScreen from './components/AuthScreen'
+import LibrarySkeleton from './components/Skeleton'
 import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import Stats from './pages/Stats'
@@ -36,7 +37,11 @@ export default function App() {
   }
 
   if (checking) {
-    return <p className="notice">Loading…</p>
+    return (
+      <div className="boot-screen">
+        <span className="boot-mark">🎮</span>
+      </div>
+    )
   }
 
   if (!user) {
@@ -45,7 +50,7 @@ export default function App() {
 
   function content() {
     if (loading) {
-      return <p className="notice">Loading your library…</p>
+      return <LibrarySkeleton />
     }
 
     if (error) {
@@ -65,7 +70,7 @@ export default function App() {
     }
 
     if (view === 'stats') {
-      return <Stats games={games} onAddGame={openAddModal} />
+      return <Stats games={games} onSelectGame={openEditModal} onAddGame={openAddModal} />
     }
 
     return (

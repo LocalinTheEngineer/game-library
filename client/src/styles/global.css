@@ -98,14 +98,16 @@ button {
 
 /* ---------- Topbar ---------- */
 .topbar {
+  padding: 20px 0 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.topbar-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 24px 0 20px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 .brand {
   display: flex;
@@ -126,25 +128,28 @@ button {
 }
 .tabs {
   display: flex;
-  gap: 4px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 4px;
+  gap: 2px;
+  margin-bottom: -1px;
+}
+.tabs button {
+  position: relative;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 10px 4px;
+  margin-right: 20px;
+}
+.tabs button.active {
+  background: transparent;
+  color: var(--text);
+  border-bottom-color: var(--accent);
 }
 .tabs button {
   background: transparent;
   border: none;
-  padding: 8px 16px;
-  border-radius: 7px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-dim);
-  transition: background 0.15s, color 0.15s;
-}
-.tabs button.active {
-  background: var(--accent);
-  color: var(--accent-ink);
+  transition: color 0.15s, border-color 0.15s;
 }
 .tabs button:not(.active):hover {
   color: var(--text);
@@ -647,26 +652,7 @@ button {
   font-family: var(--font-mono);
 }
 
-@media (max-width: 640px) {
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .tabs {
-    order: 3;
-  }
-  .stat-strip {
-    flex-wrap: wrap;
-  }
-  .stat-cell {
-    min-width: 45%;
-    border-bottom: 1px solid var(--border);
-  }
-  .bar-label {
-    width: 64px;
-    font-size: 11px;
-  }
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -930,4 +916,269 @@ button {
 .auth-wait {
   text-align: center;
   margin-top: 10px;
+}
+
+
+/* ---------- Charts ---------- */
+.chart-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.chart-empty {
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.stat-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.donut svg {
+  flex-shrink: 0;
+}
+.donut-value {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  fill: var(--text);
+}
+.donut-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--text-faint);
+}
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+}
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legend-label {
+  color: var(--text-dim);
+}
+.legend-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.legend-percent {
+  width: 40px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---------- Top games ---------- */
+.top-games {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.top-games button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: inherit;
+  text-align: left;
+}
+.top-games button:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+}
+.top-game-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.top-game-name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.top-game-track {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+.top-game-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+.top-game-hours {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ---------- Loading states ---------- */
+.boot-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.boot-mark {
+  font-size: 34px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.skeleton-card {
+  cursor: default;
+  pointer-events: none;
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg-elevated) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+.skeleton-art {
+  aspect-ratio: 16 / 9;
+  border-radius: 0;
+}
+.skeleton-line {
+  height: 11px;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .app {
+    padding: 0 16px 48px;
+  }
+  .brand h1 {
+    font-size: 18px;
+  }
+  .add-full {
+    display: none;
+  }
+  .add-button {
+    padding: 10px 15px;
+    font-size: 17px;
+    line-height: 1;
+  }
+  .tabs button {
+    margin-right: 14px;
+    font-size: 13px;
+  }
+  .stat-strip {
+    flex-wrap: wrap;
+  }
+  .stat-cell {
+    flex: 1 1 50%;
+    min-width: 0;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-cell:nth-child(even) {
+    border-right: none;
+  }
+  .stat-num {
+    font-size: 22px;
+  }
+  .library-grid,
+  .card-row {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .greeting {
+    font-size: 21px;
+  }
+  .library-controls {
+    gap: 9px;
+  }
+  .chip-row {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .chip-row::-webkit-scrollbar {
+    display: none;
+  }
+  .filter-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .chart-block {
+    padding: 18px 16px;
+  }
+  .donut {
+    gap: 18px;
+    justify-content: center;
+  }
+  .bar-label {
+    width: 66px;
+    font-size: 11px;
+  }
+  .modal {
+    padding: 22px 18px;
+  }
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .library-grid,
+  .card-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.add-short {
+  display: none;
+}
+@media (max-width: 720px) {
+  .add-short {
+    display: inline;
+  }
 }
