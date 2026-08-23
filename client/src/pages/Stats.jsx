@@ -2,8 +2,11 @@ import { useMemo } from 'react'
 import BarChart from '../components/BarChart'
 import DonutChart from '../components/DonutChart'
 import TopGames from '../components/TopGames'
+import Achievements from '../components/Achievements'
+import ActivityChart from '../components/ActivityChart'
 import EmptyState from '../components/EmptyState'
-import { STATUS_ORDER, STATUS_META } from '../constants'
+import { STATUS_ORDER, STATUS_META, OWNED_STATUSES } from '../constants'
+import { computeAchievements } from '../achievements'
 
 const PLATFORM_COLORS = {
   PC: 'var(--accent)',
@@ -38,46 +41,50 @@ function toRows(counts, colorFor) {
 }
 
 export default function Stats({ games, onSelectGame, onAddGame }) {
+  const achievements = useMemo(() => computeAchievements(games), [games])
+
   const data = useMemo(() => {
-    const rated = games.filter((g) => g.rating > 0)
-    const finished = games.filter((g) => g.status === 'completed')
-    const totalHours = games.reduce((sum, g) => sum + g.hours, 0)
+    // Wishlist henüz sahip olunmayan oyunlar; ortalamaları bozmasın.
+    const owned = games.filter((g) => OWNED_STATUSES.includes(g.status))
+    const rated = owned.filter((g) => g.rating > 0)
+    const finished = owned.filter((g) => g.status === 'completed')
+    const totalHours = owned.reduce((sum, g) => sum + g.hours, 0)
 
     const ratingRows = [5, 4, 3, 2, 1].map((score) => ({
       label: '★'.repeat(score),
-      count: games.filter((g) => g.rating === score).length,
+      count: owned.filter((g) => g.rating === score).length,
       color: 'var(--star)',
     }))
 
-    const hoursByGenre = games.reduce((acc, game) => {
+    const hoursByGenre = owned.reduce((acc, game) => {
       acc[game.genre] = (acc[game.genre] || 0) + game.hours
       return acc
     }, {})
 
     return {
-      total: games.length,
+      total: owned.length,
+      wishlist: games.length - owned.length,
       totalHours,
       completed: finished.length,
-      completionRate: games.length ? Math.round((finished.length / games.length) * 100) : 0,
+      completionRate: owned.length ? Math.round((finished.length / owned.length) * 100) : 0,
       avgRating: rated.length
         ? (rated.reduce((sum, g) => sum + g.rating, 0) / rated.length).toFixed(1)
         : '–',
       ratedCount: rated.length,
-      avgHours: games.length ? Math.round(totalHours / games.length) : 0,
-      longest: games.reduce((best, g) => (g.hours > (best?.hours ?? -1) ? g : best), null),
+      avgHours: owned.length ? Math.round(totalHours / owned.length) : 0,
       statusSegments: STATUS_ORDER.map((status) => ({
         label: STATUS_META[status].label,
         count: games.filter((g) => g.status === status).length,
         color: STATUS_META[status].color,
       })),
-      genreRows: toRows(countBy(games, 'genre')),
-      platformRows: toRows(countBy(games, 'platform'), (name) => PLATFORM_COLORS[name]),
+      genreRows: toRows(countBy(owned, 'genre')),
+      platformRows: toRows(countBy(owned, 'platform'), (name) => PLATFORM_COLORS[name]),
       ratingRows,
       hoursByGenreRows: Object.entries(hoursByGenre)
         .map(([label, count]) => ({ label, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 6),
-      topPlayed: [...games]
+      topPlayed: [...owned]
         .filter((g) => g.hours > 0)
         .sort((a, b) => b.hours - a.hours)
         .slice(0, 5),
@@ -101,7 +108,11 @@ export default function Stats({ games, onSelectGame, onAddGame }) {
   return (
     <main>
       <div className="stats-grid">
-        <StatBox value={data.total} label="Games" />
+        <StatBox
+          value={data.total}
+          label="Games"
+          hint={data.wishlist ? `${data.wishlist} on the wishlist` : null}
+        />
         <StatBox
           value={data.totalHours}
           label="Hours played"
@@ -141,6 +152,10 @@ export default function Stats({ games, onSelectGame, onAddGame }) {
         <BarChart title="Hours by genre" rows={data.hoursByGenreRows} unit="h" />
         <BarChart title="How you rate" rows={data.ratingRows} />
       </div>
+
+      <ActivityChart games={games} />
+
+      <Achievements items={achievements} />
     </main>
   )
 }

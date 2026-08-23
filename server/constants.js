@@ -1,4 +1,4 @@
-export const STATUSES = ['playing', 'completed', 'backlog', 'dropped']
+export const STATUSES = ['playing', 'completed', 'backlog', 'dropped', 'wishlist']
 
 export const GENRES = [
   'Action',

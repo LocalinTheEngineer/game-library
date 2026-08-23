@@ -4,6 +4,7 @@ const VIEWS = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'library', label: 'Library' },
   { id: 'stats', label: 'Stats' },
+  { id: 'following', label: 'Following' },
 ]
 
 export default function Topbar({

@@ -38,6 +38,9 @@ export const api = {
   setVisibility: (isPublic) =>
     request('/auth/me', { method: 'PATCH', body: JSON.stringify({ isPublic }) }),
   profile: (username) => request(`/profiles/${encodeURIComponent(username)}`),
+  following: () => request('/follows'),
+  follow: (username) => request(`/follows/${encodeURIComponent(username)}`, { method: 'PUT' }),
+  unfollow: (username) => request(`/follows/${encodeURIComponent(username)}`, { method: 'DELETE' }),
   list: () => request('/games'),
   search: (term) => request(`/search?q=${encodeURIComponent(term)}`),
   create: (game) => request('/games', { method: 'POST', body: JSON.stringify(game) }),

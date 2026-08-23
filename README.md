@@ -12,11 +12,11 @@ Keep track of the games you own, how long you've played them, and what you thoug
 
 ## What it does
 
-Create an account and start adding games. Type a title and the app searches RAWG for it, then fills in the genre, platform, release year, and cover art — you only set the things that are yours: status, hours, rating, notes.
+Create an account and start adding games. Type a title and the app searches RAWG for it, then fills in the genre, platform, release year, and cover art — you only set the things that are yours: status, hours, rating, notes. Games you don't own yet go on the wishlist and stay out of your averages until you actually buy them.
 
-The dashboard shows where your library stands at a glance. The stats page breaks it down further: completion rate, hours by genre, which platforms you actually play on, how generous you are with ratings.
+The dashboard shows where your library stands at a glance. The stats page breaks it down further: completion rate, hours by genre, which platforms you actually play on, how generous you are with ratings, what you've added month by month, and a set of achievements that fill in as your library grows.
 
-Libraries are private. If you want to show yours off, turn on a public profile and you get a link anyone can open. It shows your games, hours, and ratings, but never your notes.
+Libraries are private. If you want to show yours off, turn on a public profile and you get a link anyone can open. It shows your games, hours, and ratings, but never your notes. You can follow other people's public profiles and see their libraries side by side under Following.
 
 ## Built with
 
@@ -59,11 +59,13 @@ The API runs on port 4000, the client on 5173. Vite proxies `/api` across, so no
 
 ## How the data is arranged
 
-Three tables. `users` holds accounts. `games` is a shared catalogue — one row per game, no matter how many people own it. `user_games` sits between them and holds everything personal: status, hours, rating, notes.
+Four tables. `users` holds accounts. `games` is a shared catalogue — one row per game, no matter how many people own it. `user_games` sits between them and holds everything personal: status, hours, rating, notes. `follows` records who follows whom.
 
 That split is what lets two people track the same game without stepping on each other. Delete a game from your library and the catalogue entry stays put for everyone else.
 
-The database enforces its own rules rather than trusting the API to get it right: status has to be one of four values, ratings stay between 0 and 5, hours can't go negative, and you can't add the same game to your library twice.
+The database enforces its own rules rather than trusting the API to get it right: status has to be one of five values, ratings stay between 0 and 5, hours can't go negative, you can't add the same game to your library twice, and you can't follow yourself.
+
+Achievements aren't stored. They're derived from the library every time the stats page renders, which means there's no state to keep in sync when a game is edited or deleted.
 
 ## API
 
@@ -81,6 +83,9 @@ Everything lives under `/api`. All of it needs an `Authorization: Bearer <token>
 | DELETE | `/games/:id` | Remove an entry |
 | GET | `/search?q=` | Search RAWG |
 | GET | `/profiles/:username` | Someone's public library |
+| GET | `/follows` | People I follow |
+| PUT | `/follows/:username` | Follow someone |
+| DELETE | `/follows/:username` | Stop following |
 
 A private profile and a username that doesn't exist return the same response, so you can't use the API to find out who has an account here.
 
@@ -116,3 +121,4 @@ This started as a plain HTML page with localStorage and grew a layer at a time �
 | v6 | Accounts and JWT auth |
 | v7 | Charts, responsive layout, loading states |
 | v8 | Public profiles |
+| v9 | Wishlist, achievements, activity chart, following |

@@ -37,6 +37,7 @@ export async function findPublicProfile(username) {
   const library = await query(PROFILE_QUERY, [user.id])
 
   return {
+    id: user.id,
     username: user.username,
     memberSince: Date.parse(user.created_at),
     games: library.rows.map(toPublicEntry),

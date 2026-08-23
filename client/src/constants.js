@@ -3,9 +3,10 @@ export const STATUS_META = {
   completed: { label: 'Completed', color: 'var(--status-completed)' },
   backlog: { label: 'Backlog', color: 'var(--status-backlog)' },
   dropped: { label: 'Dropped', color: 'var(--status-dropped)' },
+  wishlist: { label: 'Wishlist', color: 'var(--status-wishlist)' },
 }
 
-export const STATUS_ORDER = ['playing', 'completed', 'backlog', 'dropped']
+export const STATUS_ORDER = ['playing', 'completed', 'backlog', 'dropped', 'wishlist']
 
 export const GENRES = [
   'Action',
@@ -30,3 +31,6 @@ export const SORT_OPTIONS = [
   { value: 'rating', label: 'Highest Rated' },
   { value: 'hours', label: 'Most Played' },
 ]
+
+// Wishlist'teki oyunlar henüz oynanmadığı için sayımların dışında tutulur.
+export const OWNED_STATUSES = ['playing', 'completed', 'backlog', 'dropped']

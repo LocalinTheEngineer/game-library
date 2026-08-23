@@ -5,6 +5,7 @@ import games from './routes/games.js'
 import search from './routes/search.js'
 import auth from './routes/auth.js'
 import profiles from './routes/profiles.js'
+import follows from './routes/follows.js'
 import { query } from './db/pool.js'
 
 const app = express()
@@ -17,6 +18,7 @@ app.use(express.json())
 
 app.use('/api/auth', auth)
 app.use('/api/profiles', profiles)
+app.use('/api/follows', follows)
 app.use('/api/games', games)
 app.use('/api/search', search)
 

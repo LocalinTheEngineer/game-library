@@ -14,11 +14,13 @@ function StatCell({ num, label }) {
 export default function Dashboard({ games, username, onSelectGame, onAddGame, onGoToLibrary }) {
   const stats = useMemo(() => {
     const by = (s) => games.filter((g) => g.status === s).length
+    const wishlist = by('wishlist')
     return {
-      total: games.length,
+      total: games.length - wishlist,
       playing: by('playing'),
       completed: by('completed'),
       backlog: by('backlog'),
+      wishlist,
       hours: games.reduce((sum, g) => sum + g.hours, 0),
     }
   }, [games])
@@ -47,6 +49,7 @@ export default function Dashboard({ games, username, onSelectGame, onAddGame, on
         <StatCell num={stats.playing} label="Playing" />
         <StatCell num={stats.completed} label="Completed" />
         <StatCell num={stats.backlog} label="Backlog" />
+        <StatCell num={stats.wishlist} label="Wishlist" />
         <StatCell num={stats.hours} label="Hours Played" />
       </div>
 

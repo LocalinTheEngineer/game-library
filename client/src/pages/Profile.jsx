@@ -17,6 +17,8 @@ export default function Profile({ username, theme, onToggleTheme, onGoHome, isSi
   const [profile, setProfile] = useState(null)
   const [status, setStatus] = useState('loading')
   const [filter, setFilter] = useState('all')
+  const [following, setFollowing] = useState(false)
+  const [followBusy, setFollowBusy] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -27,6 +29,7 @@ export default function Profile({ username, theme, onToggleTheme, onGoHome, isSi
       .then((data) => {
         if (!cancelled) {
           setProfile(data)
+          setFollowing(data.following)
           setStatus('ready')
         }
       })
@@ -38,6 +41,23 @@ export default function Profile({ username, theme, onToggleTheme, onGoHome, isSi
       cancelled = true
     }
   }, [username])
+
+  const toggleFollow = async () => {
+    setFollowBusy(true)
+    try {
+      if (following) {
+        await api.unfollow(profile.username)
+        setFollowing(false)
+      } else {
+        await api.follow(profile.username)
+        setFollowing(true)
+      }
+    } catch {
+      // Sessizce geç; buton eski durumuna döner.
+    } finally {
+      setFollowBusy(false)
+    }
+  }
 
   const stats = useMemo(() => {
     if (!profile) return null
@@ -75,7 +95,16 @@ export default function Profile({ username, theme, onToggleTheme, onGoHome, isSi
             >
               {theme === 'light' ? '☀️' : '🌙'}
             </button>
-            <button className="btn-primary" onClick={onGoHome}>
+            {isSignedIn && status === 'ready' && profile && !profile.isSelf && (
+              <button
+                className={following ? 'btn-secondary' : 'btn-primary'}
+                onClick={toggleFollow}
+                disabled={followBusy}
+              >
+                {following ? 'Following' : 'Follow'}
+              </button>
+            )}
+            <button className="btn-secondary" onClick={onGoHome}>
               {isSignedIn ? 'My library' : 'Sign in'}
             </button>
           </div>

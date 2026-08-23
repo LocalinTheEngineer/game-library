@@ -5,6 +5,7 @@ import AuthScreen from './components/AuthScreen'
 import LibrarySkeleton from './components/Skeleton'
 import ShareModal from './components/ShareModal'
 import Profile from './pages/Profile'
+import Following from './pages/Following'
 import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import Stats from './pages/Stats'
@@ -88,6 +89,10 @@ export default function App() {
 
     if (view === 'stats') {
       return <Stats games={games} onSelectGame={openEditModal} onAddGame={openAddModal} />
+    }
+
+    if (view === 'following') {
+      return <Following />
     }
 
     return (
