@@ -14,6 +14,7 @@ export default function Topbar({
   onAddGame,
   username,
   onSignOut,
+  onShare,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
@@ -70,6 +71,15 @@ export default function Topbar({
             {menuOpen && (
               <div className="account-menu" role="menu">
                 <span className="account-name">{username}</span>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onShare()
+                  }}
+                  role="menuitem"
+                >
+                  Share library
+                </button>
                 <button onClick={onSignOut} role="menuitem">
                   Sign out
                 </button>

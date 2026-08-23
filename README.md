@@ -23,6 +23,8 @@ Everyone gets their own library. Registration and sign-in issue a JWT that the c
 
 Two people can track the same game independently — same catalogue row, separate hours, ratings, and notes.
 
+Libraries are private until you say otherwise. Turning on a public profile gives you a link anyone can open — it shows your games, hours, and ratings, but never your notes. A private profile and a username that doesn't exist return the same response, so the API can't be used to check whether someone has an account.
+
 Adding a game starts with a search against the RAWG database. Pick a result and the title, genre, platform, release year, and cover art fill themselves in; the manual form is still there for anything the search misses.
 
 The RAWG key lives on the server. The browser only ever talks to this API, so the key is never shipped to the client.
@@ -63,8 +65,8 @@ Constraints are enforced in the database as well as in the API: status must be o
 ```
 client/                React app (Vite)
 ├── src/components/    Reusable UI pieces
-├── src/pages/         Dashboard, Library, Stats
-├── src/hooks/         useAuth, useGames, useTheme, useLocalStorage
+├── src/pages/         Dashboard, Library, Stats, Profile
+├── src/hooks/         useAuth, useGames, useTheme, useHashRoute, useLocalStorage
 ├── src/api.js         Fetch wrapper for the REST API
 └── src/styles/        global.css
 
@@ -74,10 +76,12 @@ server/                Express API
 ├── db/migrate.js      Applies the schema and inserts demo data
 ├── auth.js            Password hashing, token signing, route guard
 ├── users.js           Account queries
+├── profiles.js        Public profile queries
 ├── rawg.js            RAWG client, genre/platform mapping, cache
 ├── routes/games.js    Route handlers
 ├── routes/search.js   Game search endpoint
 ├── routes/auth.js     Register, login, current user
+├── routes/profiles.js Public profile endpoint
 ├── store.js           SQL queries behind the API
 ├── validate.js        Request validation
 └── index.js           App setup and error handling
@@ -92,6 +96,8 @@ Base path: `/api`
 | POST   | `/auth/register` | Create an account, returns a token |
 | POST   | `/auth/login`    | Sign in, returns a token         |
 | GET    | `/auth/me`       | Current user for a valid token   |
+| PATCH  | `/auth/me`       | Toggle public profile            |
+| GET    | `/profiles/:username` | A public library, no auth needed |
 | GET    | `/games`         | List the current library         |
 | GET    | `/games/:id` | Fetch one entry                  |
 | POST   | `/games`     | Add a game to the library        |
@@ -182,6 +188,10 @@ On Windows, set the variable first with `set VITE_API_URL=...` and then run the 
 
 Point the repository's Pages setting at the `gh-pages` branch. Rebuild and republish whenever the client changes; the API redeploys itself on every push.
 
+## Routing
+
+Public profiles live at `#/u/<username>`. Hash routing keeps deep links working on GitHub Pages, which serves static files and can't rewrite unknown paths to `index.html`.
+
 ## How it was built
 
 Each version added one layer, and the git history follows that order.
@@ -195,6 +205,7 @@ Each version added one layer, and the git history follows that order.
 - [x] v5 — RAWG integration and cover art
 - [x] v6 — JWT authentication and real accounts
 - [x] v7 — Richer charts, responsive pass, loading states
+- [x] v8 — Shareable public profiles
 
 ## Tech stack
 

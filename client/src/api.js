@@ -35,6 +35,9 @@ export const api = {
   register: (payload) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   me: () => request('/auth/me'),
+  setVisibility: (isPublic) =>
+    request('/auth/me', { method: 'PATCH', body: JSON.stringify({ isPublic }) }),
+  profile: (username) => request(`/profiles/${encodeURIComponent(username)}`),
   list: () => request('/games'),
   search: (term) => request(`/search?q=${encodeURIComponent(term)}`),
   create: (game) => request('/games', { method: 'POST', body: JSON.stringify(game) }),

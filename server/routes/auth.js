@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createUser, authenticate, findUser } from '../users.js'
+import { createUser, authenticate, findUser, setVisibility } from '../users.js'
 import { signToken, requireAuth } from '../auth.js'
 import { validateCredentials, validateRegistration } from '../validate.js'
 
@@ -14,7 +14,7 @@ router.post('/register', async (req, res, next) => {
     res.status(201).json({ user, token: signToken(user) })
   } catch (err) {
     if (err.code === '23505') {
-      const field = err.constraint === 'users_username_key' ? 'username' : 'email'
+      const field = /username/.test(err.constraint || '') ? 'username' : 'email'
       return res.status(409).json({ error: `That ${field} is already taken` })
     }
     next(err)
@@ -38,6 +38,20 @@ router.post('/login', async (req, res, next) => {
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const user = await findUser(req.userId)
+    if (!user) return res.status(401).json({ error: 'Sign in to continue' })
+    res.json(user)
+  } catch (err) {
+    next(err)
+  }
+})
+
+router.patch('/me', requireAuth, async (req, res, next) => {
+  if (typeof req.body.isPublic !== 'boolean') {
+    return res.status(400).json({ errors: ['isPublic must be true or false'] })
+  }
+
+  try {
+    const user = await setVisibility(req.userId, req.body.isPublic)
     if (!user) return res.status(401).json({ error: 'Sign in to continue' })
     res.json(user)
   } catch (err) {

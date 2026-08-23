@@ -3,8 +3,14 @@ CREATE TABLE IF NOT EXISTS users (
   username      TEXT NOT NULL UNIQUE,
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  is_public     BOOLEAN NOT NULL DEFAULT false,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Zaten kurulmuş veritabanları için.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT false;
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower ON users (lower(username));
 
 -- Oyunun kendisi: ismi, türü, platformu herkes için aynı.
 CREATE TABLE IF NOT EXISTS games (

@@ -42,5 +42,7 @@ export function useAuth() {
   const signIn = async (credentials) => accept(await api.login(credentials))
   const register = async (details) => accept(await api.register(details))
 
-  return { user, checking, signIn, register, signOut }
+  const setVisibility = async (isPublic) => setUser(await api.setVisibility(isPublic))
+
+  return { user, checking, signIn, register, signOut, setVisibility }
 }

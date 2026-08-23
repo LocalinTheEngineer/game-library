@@ -4,6 +4,7 @@ import cors from 'cors'
 import games from './routes/games.js'
 import search from './routes/search.js'
 import auth from './routes/auth.js'
+import profiles from './routes/profiles.js'
 import { query } from './db/pool.js'
 
 const app = express()
@@ -15,6 +16,7 @@ app.use(cors(allowedOrigins.length ? { origin: allowedOrigins } : {}))
 app.use(express.json())
 
 app.use('/api/auth', auth)
+app.use('/api/profiles', profiles)
 app.use('/api/games', games)
 app.use('/api/search', search)
 

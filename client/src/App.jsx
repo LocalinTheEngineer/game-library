@@ -3,20 +3,25 @@ import Topbar from './components/Topbar'
 import GameFormModal from './components/GameFormModal'
 import AuthScreen from './components/AuthScreen'
 import LibrarySkeleton from './components/Skeleton'
+import ShareModal from './components/ShareModal'
+import Profile from './pages/Profile'
 import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import Stats from './pages/Stats'
 import { useGames } from './hooks/useGames'
 import { useTheme } from './hooks/useTheme'
 import { useAuth } from './hooks/useAuth'
+import { useHashRoute } from './hooks/useHashRoute'
 
 export default function App() {
-  const { user, checking, signIn, register, signOut } = useAuth()
+  const { user, checking, signIn, register, signOut, setVisibility } = useAuth()
   const { games, loading, error, refresh, addGame, updateGame, deleteGame } = useGames(user)
   const { theme, toggleTheme } = useTheme()
 
+  const { route, goHome } = useHashRoute()
   const [view, setView] = useState('dashboard')
   const [modal, setModal] = useState(null)
+  const [sharing, setSharing] = useState(false)
 
   const openAddModal = () => setModal({ game: null })
   const openEditModal = (game) => setModal({ game })
@@ -34,6 +39,18 @@ export default function App() {
   const handleDelete = async (id) => {
     await deleteGame(id)
     closeModal()
+  }
+
+  if (route.name === 'profile') {
+    return (
+      <Profile
+        username={route.username}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onGoHome={goHome}
+        isSignedIn={Boolean(user)}
+      />
+    )
   }
 
   if (checking) {
@@ -94,6 +111,7 @@ export default function App() {
         onAddGame={openAddModal}
         username={user.username}
         onSignOut={signOut}
+        onShare={() => setSharing(true)}
       />
 
       {content()}
@@ -104,6 +122,14 @@ export default function App() {
           RAWG
         </a>
       </footer>
+
+      {sharing && (
+        <ShareModal
+          user={user}
+          onSetVisibility={setVisibility}
+          onClose={() => setSharing(false)}
+        />
+      )}
 
       {modal && (
         <GameFormModal
